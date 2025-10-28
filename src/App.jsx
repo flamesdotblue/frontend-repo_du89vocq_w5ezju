@@ -1,28 +1,64 @@
-import { useState } from 'react'
+import React from 'react';
+import Header from './components/Header';
+import JobSetup from './components/JobSetup';
+import ResumeDropzone from './components/ResumeDropzone';
+import CandidateEditor from './components/CandidateEditor';
+import Results from './components/Results';
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
+  const [jobDescription, setJobDescription] = React.useState('');
+  const [requiredSkills, setRequiredSkills] = React.useState([]);
+  const [candidates, setCandidates] = React.useState([]);
+
+  const updateJob = (patch) => {
+    if (patch.jobDescription !== undefined) setJobDescription(patch.jobDescription);
+    if (patch.requiredSkills !== undefined) setRequiredSkills(patch.requiredSkills);
+  };
+
+  const addFiles = (items) => {
+    setCandidates((prev) => [...prev, ...items]);
+  };
+
+  const removeCandidate = (id) => {
+    setCandidates((prev) => prev.filter((c) => c.id !== id));
+  };
+
+  const updateCandidate = (id, patch) => {
+    setCandidates((prev) => prev.map((c) => c.id === id ? { ...c, ...patch } : c));
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 flex items-center justify-center">
-      <div className="bg-white p-8 rounded-lg shadow-lg">
-        <h1 className="text-3xl font-bold text-gray-800 mb-4">
-          Vibe Coding Platform
-        </h1>
-        <p className="text-gray-600 mb-6">
-          Your AI-powered development environment
-        </p>
-        <div className="text-center">
-          <button
-            onClick={() => setCount(count + 1)}
-            className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded"
-          >
-            Count is {count}
-          </button>
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white text-slate-900">
+      <Header />
+      <main className="max-w-6xl mx-auto px-4 py-6 md:py-10">
+        <div className="grid lg:grid-cols-2 gap-6">
+          <JobSetup
+            jobDescription={jobDescription}
+            requiredSkills={requiredSkills}
+            onUpdate={updateJob}
+          />
+          <ResumeDropzone
+            candidates={candidates}
+            onAddFiles={addFiles}
+            onRemove={removeCandidate}
+          />
         </div>
-      </div>
-    </div>
-  )
-}
 
-export default App
+        <div className="mt-6 grid lg:grid-cols-2 gap-6">
+          <CandidateEditor
+            candidates={candidates}
+            onUpdateCandidate={updateCandidate}
+          />
+          <Results
+            requiredSkills={requiredSkills}
+            candidates={candidates}
+          />
+        </div>
+
+        <footer className="text-center text-xs text-slate-500 mt-10">
+          This is an AI-inspired local analyzer. For production-grade accuracy, connect to a backend parsing service (PDF/DOC/IMG OCR) and LLM ranking.
+        </footer>
+      </main>
+    </div>
+  );
+}
